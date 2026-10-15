@@ -203,14 +203,13 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
     <img class="logo" src="logo.png" alt="SMAX">
     <p class="tagline"><span class="latin" style="color:var(--ink)">SULIMAX MSWAK</span><br>لیستی ماددە تەواوبووەکان</p>
     <form id="authForm" class="row">
-      <div class="field" style="flex-basis:100%"><label for="an">ناو (لە لیستەکەدا بەم ناوە دەردەکەویت)</label><input id="an" maxlength="40" autocomplete="username" placeholder="ئاراس" required></div>
+      <div class="field" style="flex-basis:100%"><label for="an">ناو</label><input id="an" maxlength="40" autocomplete="username" placeholder="ئاراس" required></div>
       <div class="field" style="flex-basis:100%" id="emailBox" hidden><label for="au">ئیمەیڵ (تەنها جاری یەکەم)</label><input id="au" type="email" autocomplete="email" autocapitalize="none" dir="ltr" placeholder="name@gmail.com"></div>
       <div class="field" style="flex-basis:100%"><label for="ap">وشەی نهێنی</label><input id="ap" type="password" autocomplete="current-password" dir="ltr" minlength="6" required></div>
       <label class="check" for="remember"><input type="checkbox" id="remember" checked> لەبیرم مەکە</label>
       <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
     <p class="msg" id="authMsg" hidden></p>
-    <p class="note center">ئەکاونت تەنها لەلایەن ئەدمینەوە دروست دەکرێت.</p>
   </div>
 </div>
 
@@ -263,7 +262,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
       <button type="submit" id="nu_btn">دروستکردن</button>
     </form>
     <p class="msg" id="nuMsg" hidden></p>
-    <p class="note">ئەکاونتی دروستکراو لێرەوە ڕاستەوخۆ چالاکە. ناو و وشەی نهێنییەکە بدە بە خاوەنەکەی.</p>
+    <p class="note">ئەکاونتی دروستکراو لێرەوە ڕاستەوخۆ چالاکە. ناو و وشەی نهێنییەکە بدە بە بەرامبەر.</p>
   </section>
 
   <div class="notice" id="refillNotice" hidden></div>
@@ -434,7 +433,7 @@ async function loadUsers(){
   data.forEach(u=>{
     const r=document.createElement("div");r.className="urow";
     const s=document.createElement("span");const b=document.createElement("b");b.textContent=u.name;
-    const sm=document.createElement("small");sm.textContent=" @"+u.username;s.append(b,sm);
+    s.append(b);
     const tag=document.createElement("span");tag.style.marginInlineStart="6px";
     tag.className="chip "+(!u.approved?"warn":u.role==="admin"?"acc":"ok");
     tag.textContent=!u.approved?"چاوەڕوان / ناچالاک":u.role==="admin"?"ئەدمین":"بەکارهێنەر";s.append(tag);
@@ -486,7 +485,7 @@ async function load(){
     .order("created_at",{ascending:false}).limit(1000);
   if(error){$("sync").textContent="پەیوەندی نییە: "+errText(error);return}
   items=data;render();if(!$("reportOut").hidden)renderReport();
-  $("sync").textContent="دوایین نوێکردنەوە: "+fmtTime(Date.now())+" — لیستەکە خۆی ڕاستەوخۆ نوێ دەکاتەوە.";
+  $("sync").textContent="";
 }
 let reloadT=null;
 function startLive(){
