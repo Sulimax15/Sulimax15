@@ -104,7 +104,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:1px 6px;bor
     <h1>مسواک سولیماکس<small>لیستی ماددە تەواوبووەکان</small></h1>
     <form id="authForm" class="row">
       <div class="field" style="flex-basis:100%" id="nameBox" hidden><label for="an">ناوی تەواو (بۆ لیستەکە)</label><input id="an" maxlength="40" placeholder="ئاراس محەمەد"></div>
-      <div class="field" style="flex-basis:100%"><label for="au">ناوی بەکارهێنەر (پیتی ئینگلیزی)</label><input id="au" autocomplete="username" autocapitalize="none" dir="ltr" required></div>
+      <div class="field" style="flex-basis:100%"><label for="au">ئیمەیڵ</label><input id="au" type="email" autocomplete="email" autocapitalize="none" dir="ltr" placeholder="name@gmail.com" required></div>
       <div class="field" style="flex-basis:100%"><label for="ap">وشەی نهێنی</label><input id="ap" type="password" autocomplete="current-password" dir="ltr" minlength="6" required></div>
       <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
@@ -184,8 +184,6 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:1px 6px;bor
 
 <script>
 const $=id=>document.getElementById(id);
-const EMAIL_DOMAIN="users.sulimax.app";
-const toEmail=u=>u.trim().toLowerCase()+"@"+EMAIL_DOMAIN;
 let sb=null,session=null,profile=null,items=[],filter="out",signup=false,channel=null;
 
 function show(view){["cfgView","loginView","pendingView","mainView"].forEach(v=>$(v).hidden=v!==view)}
@@ -197,8 +195,9 @@ const fmtTime=v=>{const d=new Date(v);return pad(d.getHours())+":"+pad(d.getMinu
 
 function errText(e){
   const m=(e&&e.message)||"";
-  if(/Invalid login/i.test(m))return "ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە";
-  if(/already registered|already exists/i.test(m))return "ئەم ناوی بەکارهێنەرە پێشتر هەیە";
+  if(/Invalid login/i.test(m))return "ئیمەیڵ یان وشەی نهێنی هەڵەیە";
+  if(/already registered|already exists/i.test(m))return "ئەم ئیمەیڵە پێشتر ئەکاونتی پێ دروست کراوە";
+  if(/invalid/i.test(m)&&/email/i.test(m))return "ئەم ئیمەیڵە قبوڵ نەکرا، ئیمەیڵێکی ڕاستەقینە بنووسە";
   if(/Password should be/i.test(m))return "وشەی نهێنی دەبێت لانیکەم ٦ پیت بێت";
   if(/Email not confirmed/i.test(m))return "لە Supabase پێویستە «Confirm email» بکوژێنرێتەوە (README ببینە)";
   if(/row-level security|permission/i.test(m))return "مۆڵەتت نییە بۆ ئەم کارە";
@@ -216,16 +215,16 @@ $("switchBtn").onclick=()=>{signup=!signup;$("nameBox").hidden=!signup;$("an").r
 $("authForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("authMsg","");
   const u=$("au").value.trim().toLowerCase(),p=$("ap").value;
-  if(!/^[a-z0-9_.-]{2,30}$/.test(u))return showMsg("authMsg","ناوی بەکارهێنەر تەنها پیتی ئینگلیزی و ژمارە بێت (بێ بۆشایی)");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u))return showMsg("authMsg","ئیمەیڵەکە بە دروستی بنووسە، بۆ نموونە name@gmail.com");
   $("authBtn").disabled=true;
   try{
     if(signup){
       const name=$("an").value.trim();if(!name)throw new Error("ناوی تەواو بنووسە");
-      const {data,error}=await sb.auth.signUp({email:toEmail(u),password:p,options:{data:{username:u,name}}});
+      const {data,error}=await sb.auth.signUp({email:u,password:p,options:{data:{username:u.split("@")[0],name}}});
       if(error)throw error;
       if(!data.session){showMsg("authMsg","ئەکاونت دروست کرا، بەڵام «Confirm email» لە Supabase کوژاوە نییە. README ببینە.");}
     }else{
-      const {error}=await sb.auth.signInWithPassword({email:toEmail(u),password:p});
+      const {error}=await sb.auth.signInWithPassword({email:u,password:p});
       if(error)throw error;
     }
     $("ap").value="";
