@@ -151,6 +151,27 @@ button:disabled{opacity:.5}
 .tbl td.ck input{width:22px;height:22px;accent-color:var(--ok);margin:0;cursor:pointer}
 .tbl tr.filled td{color:var(--muted)}
 .tbl tr.filled td b{text-decoration:line-through;text-decoration-color:var(--ok)}
+.modal{position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.mhead{position:sticky;top:0;z-index:2;background:var(--barbg);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.mhead .in,.mbody{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mhead .in{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-block:12px}
+.mbody{padding-block:14px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.xbtn{width:40px;height:40px;padding:0;border-radius:50%;background:var(--surface2);color:var(--ink);border:1px solid var(--line);font-size:18px;flex:none}
+body.locked{overflow:hidden}
+table.rt{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.88rem}
+.rt th,.rt td{text-align:right;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere;word-break:break-word}
+.rt th{background:var(--surface2);color:var(--muted);font-size:.75rem;font-weight:700}
+.rt tr:last-child td{border-bottom:0}
+.rt .ck{width:42px;text-align:center}
+.rt .dt{width:84px}
+.rt .au{width:22%}
+.rt td.ck input{width:22px;height:22px;accent-color:var(--ok);margin:2px 0 0;cursor:pointer}
+.rt td b{font-weight:800;display:block;line-height:1.35}
+.rt .sub2{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;font-size:.78rem;color:var(--muted)}
+.rt td.dt{font-family:var(--latin);font-size:.78rem;direction:ltr;text-align:right;white-space:normal}
+.rt tr.filled td{color:var(--muted)}
+.rt tr.filled td b{text-decoration:line-through;text-decoration-color:var(--ok)}
+@media (max-width:360px){.rt .dt{width:70px}.rt th,.rt td{padding:8px 6px}}
 .notice{background:var(--ok-soft);border:1px solid var(--ok);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .notice b{color:var(--ok)}
 .notice ul{margin:0;padding-inline-start:18px;font-size:.9rem}
@@ -198,7 +219,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
   <div class="panel login">
     <span class="chip warn" style="align-self:flex-start">چاوەڕوانی پەسەندکردن</span>
     <h1 id="pendName"></h1>
-    <p>ئەکاونتەکەت دروست کرا. لیژنە دەبێت پەسەندی بکات پێش ئەوەی بتوانیت لیستەکە ببینیت و ماددە بنووسیت.</p>
+    <p>ئەکاونتەکەت دروست کرا. ئەدمین دەبێت پەسەندی بکات پێش ئەوەی بتوانیت لیستەکە ببینیت و ماددە بنووسیت.</p>
     <div class="row"><button id="pendRetry">دووبارە پشکنین</button><button class="ghost" id="pendOut">چوونەدەرەوە</button></div>
   </div>
 </div>
@@ -232,8 +253,17 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
 
   <section class="panel" id="usersPanel" hidden>
     <h2>بەڕێوەبردنی بەکارهێنەران <span class="chip acc" id="userCount"></span></h2>
-    <p class="note">بەکارهێنەرە نوێیەکان خۆیان ئەکاونت دروست دەکەن، تۆ لێرە پەسەندیان دەکەیت.</p>
     <div id="userList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <h2 style="margin-top:6px">دروستکردنی ئەکاونتی نوێ</h2>
+    <form class="row" id="newUserForm">
+      <div class="field"><label for="nu_name">ناو</label><input id="nu_name" maxlength="40" placeholder="ئاراس" required></div>
+      <div class="field"><label for="nu_email">ئیمەیڵ</label><input id="nu_email" type="email" dir="ltr" autocapitalize="none" placeholder="name@gmail.com" required></div>
+      <div class="field"><label for="nu_pass">وشەی نهێنی</label><input id="nu_pass" dir="ltr" minlength="6" autocomplete="new-password" required></div>
+      <div class="field" style="flex:1 1 130px"><label for="nu_role">جۆر</label><select id="nu_role"><option value="user">ئاسایی</option><option value="admin">ئەدمین</option></select></div>
+      <button type="submit" id="nu_btn">دروستکردن</button>
+    </form>
+    <p class="msg" id="nuMsg" hidden></p>
+    <p class="note">ئەکاونتی دروستکراو لێرەوە ڕاستەوخۆ چالاکە. ناو و وشەی نهێنییەکە بدە بە خاوەنەکەی.</p>
   </section>
 
   <div class="notice" id="refillNotice" hidden></div>
@@ -260,10 +290,6 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
       <div class="field"><label for="rcat">صنف</label><select id="rcat"><option value="">هەموو صنفەکان</option><option>کارەبا</option><option>ئاوەڕۆ</option><option>ئاو</option><option>صحیات</option></select></div>
       <button type="button" id="reportBtn">سەیرکردن</button>
     </div>
-    <div id="reportOut" hidden style="display:flex;flex-direction:column;gap:10px">
-      <div class="listhead" style="margin:0"><span class="note" id="reportInfo"></span><button class="mini" type="button" id="reportCopy">کۆپیکردن</button></div>
-      <div class="tbl"><table><thead><tr><th>پڕکرایەوە</th><th>#</th><th>ماددە</th><th>صنف</th><th>بڕی ماوە</th><th>بەروار</th><th>نووسەر</th></tr></thead><tbody id="reportBody"></tbody></table></div>
-    </div>
   </section>
 
   <div class="listhead"><h2 id="listTitle">لیستی ماددەکان</h2><button class="mini" id="copyBtn">کۆپیکردنی لیست</button></div>
@@ -279,6 +305,21 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
   <div class="list" id="list"></div>
   <p class="note" id="sync" style="text-align:center"></p>
 </div>
+</div>
+<div class="modal" id="reportOut" hidden role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+  <div class="mhead"><div class="in">
+    <h2 id="reportTitle">ماددە تەواوبووەکان</h2>
+    <button type="button" class="xbtn" id="reportClose" aria-label="داخستن">✕</button>
+  </div></div>
+  <div class="mbody">
+    <div class="row">
+      <div class="field"><label for="rcat2">صنف</label><select id="rcat2"><option value="">هەموو صنفەکان</option><option>کارەبا</option><option>ئاوەڕۆ</option><option>ئاو</option><option>صحیات</option></select></div>
+      <button type="button" class="mini" id="reportCopy" style="padding:10px 14px">کۆپیکردن</button>
+    </div>
+    <p class="note" id="reportInfo"></p>
+    <table class="rt"><thead><tr><th class="ck">✓</th><th>ماددە</th><th class="dt">بەروار</th><th class="au">نووسەر</th></tr></thead><tbody id="reportBody"></tbody></table>
+    <p class="note">سەح لە خانەی ✓ بدە بۆ ئەوەی ماددەکە وەک پڕکراوە هەژمار بکرێت.</p>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -328,7 +369,7 @@ $("authForm").addEventListener("submit",async e=>{
     if(signup){
       const email=$("au").value.trim().toLowerCase();
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error("ئیمەیڵەکە بە دروستی بنووسە، بۆ نموونە name@gmail.com");
-      try{const {data:left}=await sb.rpc("accounts_left");if(left===0)throw new Error("LIMIT")}catch(x){if(x.message==="LIMIT")throw new Error("ژمارەی ئەکاونتەکان گەیشتووەتە ٢٠. پەیوەندی بە لیژنەوە بکە.")}
+      try{const {data:left}=await sb.rpc("accounts_left");if(left===0)throw new Error("LIMIT")}catch(x){if(x.message==="LIMIT")throw new Error("ژمارەی ئەکاونتەکان گەیشتووەتە ٢٠. پەیوەندی بە ئەدمینوە بکە.")}
       if(await emailForName(name))throw new Error("ئەم ناوە پێشتر بەکارهاتووە، ناوێکی تر هەڵبژێرە (بۆ نموونە ناوی دووەمیشی لەگەڵ بنووسە)");
       const {data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:name.toLowerCase(),name}}});
       if(error)throw error;
@@ -353,7 +394,7 @@ async function route(){
   if(!session){profile=null;stopLive();show("loginView");return}
   try{await loadProfile()}catch(e){toast(errText(e));show("loginView");return}
   if(!profile||!profile.approved){$("pendName").textContent="سڵاو "+(profile?profile.name:"");stopLive();show("pendingView");return}
-  $("hello").textContent=profile.name+(profile.role==="admin"?" · لیژنە":"");
+  $("hello").textContent=profile.name+(profile.role==="admin"?" · ئەدمین":"");
   $("btnUsers").hidden=profile.role!=="admin";
   const isAdm=profile.role==="admin";$("reportPanel").hidden=!isAdm;$("who").hidden=!isAdm;
   $("listTitle").textContent=isAdm?"هەموو ماددەکان":"ماددەکانی من";
@@ -393,18 +434,40 @@ async function loadUsers(){
     const sm=document.createElement("small");sm.textContent=" @"+u.username;s.append(b,sm);
     const tag=document.createElement("span");tag.style.marginInlineStart="6px";
     tag.className="chip "+(!u.approved?"warn":u.role==="admin"?"acc":"ok");
-    tag.textContent=!u.approved?"چاوەڕوان / ناچالاک":u.role==="admin"?"لیژنە":"بەکارهێنەر";s.append(tag);
+    tag.textContent=!u.approved?"چاوەڕوان / ناچالاک":u.role==="admin"?"ئەدمین":"بەکارهێنەر";s.append(tag);
     const a=document.createElement("span");a.style.cssText="display:flex;gap:6px;flex-wrap:wrap";
     if(u.id!==profile.id){
       const ap=document.createElement("button");ap.className="mini"+(u.approved?" danger":"");
       ap.textContent=u.approved?"ناچالاککردن":"پەسەندکردن";ap.onclick=()=>setUser(u.id,{approved:!u.approved});a.append(ap);
       if(u.approved){const ro=document.createElement("button");ro.className="mini";
-        ro.textContent=u.role==="admin"?"لابردن لە لیژنە":"کردن بە لیژنە";
+        ro.textContent=u.role==="admin"?"لابردن لە ئەدمین":"کردن بە ئەدمین";
         ro.onclick=()=>setUser(u.id,{role:u.role==="admin"?"user":"admin"});a.append(ro)}
     }
     r.append(s,a);box.appendChild(r);
   });
 }
+
+$("newUserForm").addEventListener("submit",async e=>{
+  e.preventDefault();showMsg("nuMsg","");
+  const name=$("nu_name").value.trim().replace(/\s+/g," "),email=$("nu_email").value.trim().toLowerCase(),pass=$("nu_pass").value,role=$("nu_role").value;
+  $("nu_btn").disabled=true;
+  try{
+    if(name.length<2)throw new Error("ناوەکە بنووسە");
+    const {data:left}=await sb.rpc("accounts_left");if(left===0)throw new Error("ژمارەی ئەکاونتەکان گەیشتووەتە ٢٠.");
+    if(await emailForName(name))throw new Error("ئەم ناوە پێشتر بەکارهاتووە.");
+    // separate client so the admin stays signed in
+    const mem={};const tmp=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"sx_tmp",storage:{getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=v},removeItem:k=>{delete mem[k]}}}});
+    const {data,error}=await tmp.auth.signUp({email,password:pass,options:{data:{username:name.toLowerCase(),name}}});
+    if(error)throw error;
+    const uid=data.user&&data.user.id;if(!uid)throw new Error("ئەکاونت دروست نەکرا");
+    try{await tmp.auth.signOut()}catch(x){}
+    const {error:e2}=await sb.from("profiles").update({approved:true,role}).eq("id",uid);
+    if(e2)throw e2;
+    $("nu_name").value=$("nu_email").value=$("nu_pass").value="";$("nu_role").value="user";
+    toast(role==="admin"?"ئەکاونتی ئەدمین دروست کرا":"ئەکاونت دروست کرا");loadUsers();countPending();
+  }catch(err){showMsg("nuMsg",errText(err))}
+  $("nu_btn").disabled=false;
+});
 
 // ---------- items ----------
 $("addForm").addEventListener("submit",async e=>{
@@ -515,33 +578,38 @@ const reportRows=()=>reportIds.map(id=>items.find(i=>i.id===id)).filter(Boolean)
 function showReport(){
   reportCat=$("rcat").value;
   reportIds=items.filter(i=>!i.done&&(!reportCat||i.category===reportCat)).map(i=>i.id);
-  renderReport();$("reportOut").hidden=false;
+  renderReport();
 }
 function renderReport(){
   const rows=reportRows(),body=$("reportBody");body.textContent="";
-  rows.forEach((i,k)=>{
+  rows.forEach(i=>{
     const tr=document.createElement("tr");if(i.done)tr.className="filled";
     const tdc=document.createElement("td");tdc.className="ck";
     const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!i.done;cb.id="rc_"+i.id;
     cb.setAttribute("aria-label","پڕکرایەوە: "+i.name);
     cb.onchange=async()=>{cb.disabled=true;const {error}=await sb.from("items").update({done:cb.checked}).eq("id",i.id);
       if(error){toast(errText(error));cb.checked=!cb.checked}else{toast(cb.checked?"وەک پڕکراوە هەژمار کرا":"گەڕێندرایەوە بۆ تەواوبوو");await load()}cb.disabled=false};
-    tdc.append(cb);tr.append(tdc);
-    const cells=[String(k+1),i.name,i.category||"—",i.note||"—",fmtDate(i.created_at),(i.author&&i.author.name)||"بەکارهێنەر"];
-    cells.forEach((v,ci)=>{const td=document.createElement("td");
-      if(ci===0)td.className="n";
-      if(ci===1){const b=document.createElement("b");b.textContent=v;td.append(b)}
-      else if(ci===2&&i.category){const sp=document.createElement("span");sp.className="cat";sp.textContent=v;td.append(sp)}
-      else if(ci===4){td.className="date";td.textContent=v}
-      else td.textContent=v;
-      tr.append(td)});
-    body.append(tr);
+    tdc.append(cb);
+    const tdn=document.createElement("td");const b=document.createElement("b");b.textContent=i.name;tdn.append(b);
+    const sub=document.createElement("div");sub.className="sub2";
+    if(i.category){const c=document.createElement("span");c.className="cat";c.textContent=i.category;sub.append(c)}
+    if(i.note){const n=document.createElement("span");n.textContent="بڕی ماوە: "+i.note;sub.append(n)}
+    if(sub.childNodes.length)tdn.append(sub);
+    const tdd=document.createElement("td");tdd.className="dt";tdd.textContent=fmtDate(i.created_at);
+    const tda=document.createElement("td");tda.className="au";tda.textContent=(i.author&&i.author.name)||"بەکارهێنەر";
+    tr.append(tdc,tdn,tdd,tda);body.append(tr);
   });
-  if(!rows.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=7;td.style.textAlign="center";td.style.color="var(--muted)";td.textContent="هیچ ماددەیەکی تەواوبوو لەم صنفەدا نییە.";tr.append(td);body.append(tr)}
+  if(!rows.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=4;td.style.textAlign="center";td.style.color="var(--muted)";td.textContent="هیچ ماددەیەکی تەواوبوو لەم صنفەدا نییە.";tr.append(td);body.append(tr)}
   const filled=rows.filter(i=>i.done).length;
-  $("reportInfo").textContent=(reportCat?"صنفی "+reportCat:"هەموو صنفەکان")+" · "+(rows.length-filled)+" تەواوبوو"+(filled?" · "+filled+" پڕکرایەوە":"");
+  $("reportTitle").textContent=reportCat?"صنفی "+reportCat:"هەموو صنفەکان";
+  $("reportInfo").textContent=(rows.length-filled)+" ماددەی تەواوبوو"+(filled?" · "+filled+" پڕکرایەوە":"");
 }
-$("reportBtn").onclick=showReport;
+function openReport(){$("rcat2").value=$("rcat").value;showReport();$("reportOut").hidden=false;document.body.classList.add("locked");$("reportOut").scrollTop=0}
+function closeReport(){$("reportOut").hidden=true;document.body.classList.remove("locked")}
+$("reportClose").onclick=closeReport;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("reportOut").hidden)closeReport()});
+$("rcat2").onchange=()=>{$("rcat").value=$("rcat2").value;showReport()};
+$("reportBtn").onclick=openReport;
 $("reportCopy").onclick=async()=>{const t=listText(reportRows().filter(i=>!i.done),reportCat);try{await navigator.clipboard.writeText(t);toast("کۆپی کرا")}catch(e){if(navigator.share)navigator.share({text:t}).catch(()=>{});else toast("کۆپی نەکرا")}};
 
 // ---------- theme ----------

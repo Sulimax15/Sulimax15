@@ -1,5 +1,5 @@
 // Caches the app shell so it opens fast; data always comes live from Supabase.
-const CACHE = "sulimax-v9";
+const CACHE = "sulimax-v10";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "logo.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
