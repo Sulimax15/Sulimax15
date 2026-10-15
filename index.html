@@ -4,26 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>مسواک سولیماکس</title>
-<meta name="theme-color" content="#0B6E5F">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icon-192.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="سولیماکس">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ===================== ڕێکخستن — تەنها ئەم دوو دێڕە بگۆڕە ===================== */
+const SUPABASE_URL  = "https://zogiflhnemzzhetfrcbg.supabase.co";      // Project URL
+const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZ2lmbGhuZW16emhldGZyY2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwODMxMzAsImV4cCI6MjEwNzY1OTEzMH0.0OYhzdEA_yu_4kydsErAx_-Iw5sjCZ2U5ygaj6kIZHw";   // anon / publishable key
+/* ============================================================================ */
+</script>
 <style>
 :root{
   --bg:#F3F6F5;--surface:#FFFFFF;--ink:#13221F;--muted:#5C6E6A;--line:#DCE4E1;
   --accent:#0B6E5F;--accent-ink:#FFFFFF;--accent-soft:#E1F0EC;
-  --out:#B4432B;--out-soft:#FBE9E4;--ok:#2E7D32;--ok-soft:#E5F2E6;
+  --out:#B4432B;--out-soft:#FBE9E4;--ok:#2E7D32;--ok-soft:#E5F2E6;--warn:#8A6100;--warn-soft:#FFF3D6;
   --font:"Vazirmatn","Noto Sans Arabic",Tahoma,system-ui,sans-serif;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{
   --bg:#0F1715;--surface:#16211E;--ink:#E6EFEC;--muted:#93A6A1;--line:#26332F;
   --accent:#3FB8A2;--accent-ink:#06201B;--accent-soft:#16352F;
-  --out:#F08A72;--out-soft:#3A1E17;--ok:#7BC77F;--ok-soft:#1A3320;color-scheme:dark}}
+  --out:#F08A72;--out-soft:#3A1E17;--ok:#7BC77F;--ok-soft:#1A3320;--warn:#F2C35B;--warn-soft:#3A2F12;color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;-webkit-tap-highlight-color:transparent;
@@ -36,7 +43,7 @@ h2{margin:0;font-size:1.05rem;font-weight:800}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;font-size:.85rem;font-weight:600;font-variant-numeric:tabular-nums}
-.chip.out{background:var(--out-soft);color:var(--out)}.chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.acc{background:var(--accent-soft);color:var(--accent)}
+.chip.out{background:var(--out-soft);color:var(--out)}.chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.acc{background:var(--accent-soft);color:var(--accent)}.chip.warn{background:var(--warn-soft);color:var(--warn)}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:4px;flex:1 1 170px;min-width:0}
@@ -46,6 +53,7 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);ou
 button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
 button.ghost{background:transparent;color:var(--accent);border:1px solid var(--line);font-weight:600}
 button.mini{padding:5px 11px;font-size:.84rem;font-weight:600;background:transparent;border:1px solid var(--line);color:var(--muted)}
+button.link{background:none;color:var(--accent);padding:0;font-weight:600}
 button.danger{color:var(--out)}
 button:disabled{opacity:.5}
 .msg{margin:0;font-size:.9rem;color:var(--out)}
@@ -69,38 +77,58 @@ button:disabled{opacity:.5}
 .empty{text-align:center;color:var(--muted);padding:28px 12px}
 .empty b{display:block;color:var(--ink)}
 .menu{display:flex;gap:6px;flex-wrap:wrap}
-.login{max-width:400px;margin:8vh auto 0;width:100%}
-.logo{width:64px;height:64px;border-radius:16px}
-.users{display:flex;flex-direction:column;gap:8px}
+.login{max-width:400px;margin:6vh auto 0;width:100%}
+.logo{display:block;width:100%;max-width:260px;height:auto;border-radius:12px}
+.hlogo{display:block;height:44px;width:auto;border-radius:8px}
 .urow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:8px}
-.urow span{min-width:0}
 .urow small{color:var(--muted);direction:ltr;unicode-bidi:isolate}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 18px;border-radius:10px;font-weight:600;z-index:9}
-.install{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:.9rem;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.install{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:.9rem;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:1px 6px;border-radius:6px}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- NOT CONFIGURED -->
+<div class="wrap" id="cfgView" hidden>
+  <div class="panel login">
+    <h1>ڕێکخستن تەواو نەبووە</h1>
+    <p>لە فایلی <code>index.html</code> دا <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بە زانیاریی پرۆژەکەی Supabase ـەکەت بگۆڕە. ڕێنمایی لە <code>README.md</code> دایە.</p>
+  </div>
+</div>
+
+<!-- LOGIN / SIGNUP -->
 <div class="wrap" id="loginView" hidden>
   <div class="panel login">
-    <img class="logo" src="/icon-192.png" alt="">
+    <img class="logo" src="logo.png" alt="SMAX">
     <h1>مسواک سولیماکس<small>لیستی ماددە تەواوبووەکان</small></h1>
-    <form id="loginForm" class="row">
-      <div class="field" style="flex-basis:100%"><label for="lu">ناوی بەکارهێنەر</label><input id="lu" autocomplete="username" autocapitalize="none" dir="ltr" required></div>
-      <div class="field" style="flex-basis:100%"><label for="lp">وشەی نهێنی</label><input id="lp" type="password" autocomplete="current-password" dir="ltr" required></div>
-      <button type="submit" style="flex:1">چوونەژوورەوە</button>
+    <form id="authForm" class="row">
+      <div class="field" style="flex-basis:100%" id="nameBox" hidden><label for="an">ناوی تەواو (بۆ لیستەکە)</label><input id="an" maxlength="40" placeholder="ئاراس محەمەد"></div>
+      <div class="field" style="flex-basis:100%"><label for="au">ناوی بەکارهێنەر (پیتی ئینگلیزی)</label><input id="au" autocomplete="username" autocapitalize="none" dir="ltr" required></div>
+      <div class="field" style="flex-basis:100%"><label for="ap">وشەی نهێنی</label><input id="ap" type="password" autocomplete="current-password" dir="ltr" minlength="6" required></div>
+      <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
-    <p class="msg" id="loginMsg" hidden></p>
+    <p class="msg" id="authMsg" hidden></p>
+    <p class="note"><span id="switchText">ئەکاونتت نییە؟</span> <button class="link" id="switchBtn" type="button">دروستکردنی ئەکاونت</button></p>
+  </div>
+</div>
+
+<!-- PENDING -->
+<div class="wrap" id="pendingView" hidden>
+  <div class="panel login">
+    <span class="chip warn" style="align-self:flex-start">چاوەڕوانی پەسەندکردن</span>
+    <h1 id="pendName"></h1>
+    <p>ئەکاونتەکەت دروست کرا. لیژنە دەبێت پەسەندی بکات پێش ئەوەی بتوانیت لیستەکە ببینیت و ماددە بنووسیت.</p>
+    <div class="row"><button id="pendRetry">دووبارە پشکنین</button><button class="ghost" id="pendOut">چوونەدەرەوە</button></div>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="wrap" id="mainView" hidden>
   <div class="top">
-    <h1>مسواک سولیماکس<small id="hello"></small></h1>
+    <div style="display:flex;align-items:center;gap:12px;min-width:0"><img class="hlogo" src="logo.png" alt="SMAX"><h1>مسواک سولیماکس<small id="hello"></small></h1></div>
     <div class="menu">
-      <button class="mini" id="btnUsers" hidden>بەکارهێنەران</button>
+      <button class="mini" id="btnUsers" hidden>بەکارهێنەران <span id="pendCount"></span></button>
       <button class="mini" id="btnPass">وشەی نهێنی</button>
       <button class="mini danger" id="btnOut">چوونەدەرەوە</button>
     </div>
@@ -111,32 +139,21 @@ button:disabled{opacity:.5}
     <span style="display:flex;gap:6px"><button class="mini" id="installBtn" hidden>ئینستاڵکردن</button><button class="mini" id="installClose">داخستن</button></span>
   </div>
 
-  <!-- change password -->
   <section class="panel" id="passPanel" hidden>
     <h2>گۆڕینی وشەی نهێنی</h2>
     <form class="row" id="passForm">
-      <div class="field"><label for="po">وشەی نهێنیی ئێستا</label><input id="po" type="password" autocomplete="current-password" dir="ltr" required></div>
-      <div class="field"><label for="pn">وشەی نهێنیی نوێ</label><input id="pn" type="password" autocomplete="new-password" dir="ltr" minlength="4" required></div>
+      <div class="field"><label for="pn">وشەی نهێنیی نوێ</label><input id="pn" type="password" autocomplete="new-password" dir="ltr" minlength="6" required></div>
       <button type="submit">گۆڕین</button>
     </form>
     <p class="msg" id="passMsg" hidden></p>
   </section>
 
-  <!-- users (admin) -->
   <section class="panel" id="usersPanel" hidden>
     <h2>بەڕێوەبردنی بەکارهێنەران</h2>
-    <div class="users" id="userList"></div>
-    <form class="row" id="userForm">
-      <div class="field"><label for="un">ناوی تەواو</label><input id="un" maxlength="40" placeholder="ئاراس محەمەد" required></div>
-      <div class="field"><label for="uu">ناوی بەکارهێنەر (ئینگلیزی)</label><input id="uu" maxlength="40" dir="ltr" autocapitalize="none" placeholder="aras" required></div>
-      <div class="field"><label for="upw">وشەی نهێنی</label><input id="upw" dir="ltr" minlength="4" required></div>
-      <div class="field" style="flex:0 1 140px"><label for="ur">جۆر</label><select id="ur"><option value="user">بەکارهێنەر</option><option value="admin">لیژنە</option></select></div>
-      <button type="submit">زیادکردن</button>
-    </form>
-    <p class="msg" id="userMsg" hidden></p>
+    <p class="note">بەکارهێنەرە نوێیەکان خۆیان ئەکاونت دروست دەکەن، تۆ لێرە پەسەندیان دەکەیت.</p>
+    <div id="userList" style="display:flex;flex-direction:column;gap:8px"></div>
   </section>
 
-  <!-- add item -->
   <section class="panel">
     <h2>تۆمارکردنی ماددەی تەواوبوو</h2>
     <form class="row" id="addForm">
@@ -167,88 +184,148 @@ button:disabled{opacity:.5}
 
 <script>
 const $=id=>document.getElementById(id);
-let token=null,me=null,items=[],filter="out",lastVersion=-1;
-try{token=localStorage.getItem("sx_token")}catch(e){}
+const EMAIL_DOMAIN="users.sulimax.app";
+const toEmail=u=>u.trim().toLowerCase()+"@"+EMAIL_DOMAIN;
+let sb=null,session=null,profile=null,items=[],filter="out",signup=false,channel=null;
 
+function show(view){["cfgView","loginView","pendingView","mainView"].forEach(v=>$(v).hidden=v!==view)}
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
 function showMsg(id,t){const m=$(id);m.textContent=t||"";m.hidden=!t}
 const pad=n=>String(n).padStart(2,"0");
-const fmtDate=ms=>{const d=new Date(ms);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()};
-const fmtTime=ms=>{const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const fmtDate=v=>{const d=new Date(v);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()};
+const fmtTime=v=>{const d=new Date(v);return pad(d.getHours())+":"+pad(d.getMinutes())};
 
-async function api(path,opts={}){
-  const r=await fetch(path,{method:opts.method||"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:opts.body?JSON.stringify(opts.body):undefined});
-  let data={};try{data=await r.json()}catch(e){}
-  if(r.status===401&&path!=="/api/login"){logoutLocal();throw new Error(data.error||"پێویستە بچیتە ژوورەوە")}
-  if(!r.ok)throw new Error(data.error||"هەڵەیەک ڕوویدا");
-  return data;
+function errText(e){
+  const m=(e&&e.message)||"";
+  if(/Invalid login/i.test(m))return "ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە";
+  if(/already registered|already exists/i.test(m))return "ئەم ناوی بەکارهێنەرە پێشتر هەیە";
+  if(/Password should be/i.test(m))return "وشەی نهێنی دەبێت لانیکەم ٦ پیت بێت";
+  if(/Email not confirmed/i.test(m))return "لە Supabase پێویستە «Confirm email» بکوژێنرێتەوە (README ببینە)";
+  if(/row-level security|permission/i.test(m))return "مۆڵەتت نییە بۆ ئەم کارە";
+  if(/Failed to fetch|NetworkError/i.test(m))return "پەیوەندی بە ئینتەرنێتەوە نییە";
+  return m||"هەڵەیەک ڕوویدا";
 }
 
-function logoutLocal(){token=null;me=null;try{localStorage.removeItem("sx_token")}catch(e){};$("mainView").hidden=true;$("loginView").hidden=false}
+// ---------- auth ----------
+$("switchBtn").onclick=()=>{signup=!signup;$("nameBox").hidden=!signup;$("an").required=signup;
+  $("authBtn").textContent=signup?"دروستکردنی ئەکاونت":"چوونەژوورەوە";
+  $("switchText").textContent=signup?"ئەکاونتت هەیە؟":"ئەکاونتت نییە؟";
+  $("switchBtn").textContent=signup?"چوونەژوورەوە":"دروستکردنی ئەکاونت";
+  $("ap").autocomplete=signup?"new-password":"current-password";showMsg("authMsg","")};
 
-$("loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();showMsg("loginMsg","");
-  try{const d=await api("/api/login",{method:"POST",body:{username:$("lu").value,password:$("lp").value}});
-    token=d.token;try{localStorage.setItem("sx_token",token)}catch(e){};me=d.user;$("lp").value="";startMain();}
-  catch(err){showMsg("loginMsg",err.message)}
+$("authForm").addEventListener("submit",async e=>{
+  e.preventDefault();showMsg("authMsg","");
+  const u=$("au").value.trim().toLowerCase(),p=$("ap").value;
+  if(!/^[a-z0-9_.-]{2,30}$/.test(u))return showMsg("authMsg","ناوی بەکارهێنەر تەنها پیتی ئینگلیزی و ژمارە بێت (بێ بۆشایی)");
+  $("authBtn").disabled=true;
+  try{
+    if(signup){
+      const name=$("an").value.trim();if(!name)throw new Error("ناوی تەواو بنووسە");
+      const {data,error}=await sb.auth.signUp({email:toEmail(u),password:p,options:{data:{username:u,name}}});
+      if(error)throw error;
+      if(!data.session){showMsg("authMsg","ئەکاونت دروست کرا، بەڵام «Confirm email» لە Supabase کوژاوە نییە. README ببینە.");}
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email:toEmail(u),password:p});
+      if(error)throw error;
+    }
+    $("ap").value="";
+  }catch(err){showMsg("authMsg",errText(err))}
+  $("authBtn").disabled=false;
 });
 
-$("btnOut").onclick=async()=>{try{await api("/api/logout",{method:"POST"})}catch(e){};logoutLocal()};
-$("btnPass").onclick=()=>{$("passPanel").hidden=!$("passPanel").hidden};
-$("btnUsers").onclick=()=>{const p=$("usersPanel");p.hidden=!p.hidden;if(!p.hidden)loadUsers()};
+async function loadProfile(){
+  const {data,error}=await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
+  if(error)throw error;profile=data;
+}
 
+async function route(){
+  if(!session){profile=null;stopLive();show("loginView");return}
+  try{await loadProfile()}catch(e){toast(errText(e));show("loginView");return}
+  if(!profile||!profile.approved){$("pendName").textContent="سڵاو "+(profile?profile.name:"");stopLive();show("pendingView");return}
+  $("hello").textContent="بەخێربێیت، "+profile.name+(profile.role==="admin"?" (لیژنە)":"");
+  $("btnUsers").hidden=profile.role!=="admin";
+  show("mainView");await load();startLive();setupInstall();
+  if(profile.role==="admin")countPending();
+}
+$("pendRetry").onclick=route;
+$("pendOut").onclick=()=>sb.auth.signOut();
+$("btnOut").onclick=()=>sb.auth.signOut();
+$("btnPass").onclick=()=>{$("passPanel").hidden=!$("passPanel").hidden};
 $("passForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("passMsg","");
-  try{await api("/api/me/password",{method:"POST",body:{old:$("po").value,new:$("pn").value}});$("po").value=$("pn").value="";$("passPanel").hidden=true;toast("وشەی نهێنی گۆڕدرا")}
-  catch(err){showMsg("passMsg",err.message)}
+  const {error}=await sb.auth.updateUser({password:$("pn").value});
+  if(error)return showMsg("passMsg",errText(error));
+  $("pn").value="";$("passPanel").hidden=true;toast("وشەی نهێنی گۆڕدرا");
 });
 
-async function loadUsers(){
-  try{const {users}=await api("/api/users");const box=$("userList");box.textContent="";
-    users.forEach(u=>{
-      const r=document.createElement("div");r.className="urow";
-      const s=document.createElement("span");const b=document.createElement("b");b.textContent=u.name;const sm=document.createElement("small");sm.textContent=" @"+u.username;
-      s.append(b,sm);if(u.role==="admin"){const c=document.createElement("span");c.className="chip acc";c.style.marginInlineStart="6px";c.textContent="لیژنە";s.append(c)}
-      const a=document.createElement("span");a.style.display="flex";a.style.gap="6px";a.style.flexWrap="wrap";
-      const rp=document.createElement("button");rp.className="mini";rp.textContent="وشەی نهێنیی نوێ";
-      rp.onclick=()=>{ if(a.querySelector("input"))return;
-        const i=document.createElement("input");i.dir="ltr";i.placeholder="وشەی نوێ";i.style.width="130px";i.style.padding="5px 8px";
-        const ok=document.createElement("button");ok.className="mini";ok.textContent="پاشەکەوت";
-        ok.onclick=async()=>{try{await api("/api/users/"+u.id,{method:"PATCH",body:{password:i.value}});toast("وشەی نهێنی گۆڕدرا");loadUsers()}catch(err){toast(err.message)}};
-        a.prepend(i,ok)};
-      a.append(rp);
-      if(u.id!==me.id){const del=document.createElement("button");del.className="mini danger";del.textContent="سڕینەوە";
-        del.onclick=()=>{if(del.dataset.sure){api("/api/users/"+u.id,{method:"DELETE"}).then(()=>{toast("سڕایەوە");loadUsers()}).catch(err=>toast(err.message))}else{del.dataset.sure=1;del.textContent="دڵنیایت؟"}};
-        a.append(del)}
-      r.append(s,a);box.appendChild(r);
-    });
-  }catch(err){showMsg("userMsg",err.message)}
+// ---------- users (admin) ----------
+$("btnUsers").onclick=()=>{const p=$("usersPanel");p.hidden=!p.hidden;if(!p.hidden)loadUsers()};
+async function countPending(){
+  const {count}=await sb.from("profiles").select("id",{count:"exact",head:true}).eq("approved",false);
+  $("pendCount").textContent=count?"("+count+" نوێ)":"";
 }
-$("userForm").addEventListener("submit",async e=>{
-  e.preventDefault();showMsg("userMsg","");
-  try{await api("/api/users",{method:"POST",body:{name:$("un").value,username:$("uu").value,password:$("upw").value,role:$("ur").value}});
-    $("un").value=$("uu").value=$("upw").value="";toast("بەکارهێنەر زیادکرا");loadUsers()}
-  catch(err){showMsg("userMsg",err.message)}
-});
+async function setUser(id,patch){
+  const {error}=await sb.from("profiles").update(patch).eq("id",id);
+  if(error)toast(errText(error));else{toast("پاشەکەوت کرا");loadUsers();countPending()}
+}
+async function loadUsers(){
+  const {data,error}=await sb.from("profiles").select("*").order("approved").order("created_at");
+  const box=$("userList");box.textContent="";
+  if(error){box.textContent=errText(error);return}
+  data.forEach(u=>{
+    const r=document.createElement("div");r.className="urow";
+    const s=document.createElement("span");const b=document.createElement("b");b.textContent=u.name;
+    const sm=document.createElement("small");sm.textContent=" @"+u.username;s.append(b,sm);
+    const tag=document.createElement("span");tag.style.marginInlineStart="6px";
+    tag.className="chip "+(!u.approved?"warn":u.role==="admin"?"acc":"ok");
+    tag.textContent=!u.approved?"چاوەڕوان / ناچالاک":u.role==="admin"?"لیژنە":"بەکارهێنەر";s.append(tag);
+    const a=document.createElement("span");a.style.cssText="display:flex;gap:6px;flex-wrap:wrap";
+    if(u.id!==profile.id){
+      const ap=document.createElement("button");ap.className="mini"+(u.approved?" danger":"");
+      ap.textContent=u.approved?"ناچالاککردن":"پەسەندکردن";ap.onclick=()=>setUser(u.id,{approved:!u.approved});a.append(ap);
+      if(u.approved){const ro=document.createElement("button");ro.className="mini";
+        ro.textContent=u.role==="admin"?"لابردن لە لیژنە":"کردن بە لیژنە";
+        ro.onclick=()=>setUser(u.id,{role:u.role==="admin"?"user":"admin"});a.append(ro)}
+    }
+    r.append(s,a);box.appendChild(r);
+  });
+}
 
+// ---------- items ----------
 $("addForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("addMsg","");$("addBtn").disabled=true;
-  try{await api("/api/items",{method:"POST",body:{name:$("iname").value,note:$("inote").value}});
-    $("iname").value=$("inote").value="";toast("زیادکرا");await load(true)}
-  catch(err){showMsg("addMsg",err.message)}
+  const {error}=await sb.from("items").insert({name:$("iname").value.trim(),note:$("inote").value.trim()});
+  if(error)showMsg("addMsg",errText(error));else{$("iname").value=$("inote").value="";toast("زیادکرا");await load()}
   $("addBtn").disabled=false;
 });
 
+async function load(){
+  const {data,error}=await sb.from("items")
+    .select("*, author:profiles!items_created_by_fkey(name), doner:profiles!items_done_by_fkey(name)")
+    .order("created_at",{ascending:false}).limit(1000);
+  if(error){$("sync").textContent="پەیوەندی نییە: "+errText(error);return}
+  items=data;render();
+  $("sync").textContent="دوایین نوێکردنەوە: "+fmtTime(Date.now())+" — لیستەکە خۆی ڕاستەوخۆ نوێ دەکاتەوە.";
+}
+let reloadT=null;
+function startLive(){
+  if(channel)return;
+  channel=sb.channel("items-live").on("postgres_changes",{event:"*",schema:"public",table:"items"},()=>{clearTimeout(reloadT);reloadT=setTimeout(load,300)}).subscribe();
+}
+function stopLive(){if(channel){sb.removeChannel(channel);channel=null}}
+setInterval(()=>{if(!document.hidden&&profile&&profile.approved)load()},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&profile&&profile.approved)load()});
+
 function render(){
   const sel=$("who"),cur=sel.value;
-  const people=[...new Map(items.map(i=>[i.by,i.byName])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  const people=[...new Map(items.map(i=>[i.created_by,(i.author&&i.author.name)||"بەکارهێنەر"])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
   sel.innerHTML='<option value="">هەموو بەکارهێنەران</option>';
   people.forEach(([id,n])=>{const o=document.createElement("option");o.value=id;o.textContent=n;sel.appendChild(o)});
   sel.value=people.some(p=>p[0]===cur)?cur:"";
   const outN=items.filter(i=>!i.done).length;
   $("cOut").textContent=outN+" تەواوبووە";$("cOk").textContent=(items.length-outN)+" پڕکراوەتەوە";
   const q=$("q").value.trim().toLowerCase(),w=sel.value;
-  const list=items.filter(i=>(filter==="all"||(filter==="out"?!i.done:i.done))&&(!w||i.by===w)&&(!q||(i.name+" "+(i.note||"")).toLowerCase().includes(q)));
+  const list=items.filter(i=>(filter==="all"||(filter==="out"?!i.done:i.done))&&(!w||i.created_by===w)&&(!q||(i.name+" "+(i.note||"")).toLowerCase().includes(q)));
   const box=$("list");box.textContent="";
   if(!list.length){box.innerHTML=items.length?'<div class="empty"><b>هیچ ئەنجامێک نییە</b>گەڕان یان فلتەرەکان بگۆڕە.</div>':'<div class="empty"><b>هێشتا هیچ ماددەیەک تۆمار نەکراوە</b>یەکەم ماددەی تەواوبوو لە فۆڕمی سەرەوە بنووسە.</div>';return}
   list.forEach(i=>{
@@ -258,18 +335,19 @@ function render(){
     c.append(n,st);
     if(i.note){const s=document.createElement("div");s.className="sub";s.textContent=i.note;c.append(s)}
     const m=document.createElement("div");m.className="meta";
-    const d=document.createElement("span");d.innerHTML='بەروار: <b class="date"></b>';d.querySelector("b").textContent=fmtDate(i.at)+"  "+fmtTime(i.at);
-    const by=document.createElement("span");by.innerHTML="نووسەر: <b></b>";by.querySelector("b").textContent=i.byName;
+    const d=document.createElement("span");d.append("بەروار: ");const db=document.createElement("b");db.className="date";db.textContent=fmtDate(i.created_at)+"  "+fmtTime(i.created_at);d.append(db);
+    const by=document.createElement("span");by.append("نووسەر: ");const bb=document.createElement("b");bb.textContent=(i.author&&i.author.name)||"بەکارهێنەر";by.append(bb);
     m.append(d,by);
-    if(i.done&&i.doneAt){const x=document.createElement("span");x.innerHTML='پڕکرایەوە: <b class="date"></b>';x.querySelector("b").textContent=fmtDate(i.doneAt)+(i.doneByName?" – ":"");if(i.doneByName){const y=document.createElement("b");y.textContent=i.doneByName;x.append(y)}m.append(x)}
+    if(i.done&&i.done_at){const x=document.createElement("span");x.append("پڕکرایەوە: ");const xb=document.createElement("b");xb.className="date";xb.textContent=fmtDate(i.done_at);x.append(xb);
+      if(i.doner&&i.doner.name){x.append(" – ");const y=document.createElement("b");y.textContent=i.doner.name;x.append(y)}m.append(x)}
     c.append(m);
     const a=document.createElement("div");a.className="acts";
     const t=document.createElement("button");t.className="mini";t.textContent=i.done?"گەڕاندنەوە بۆ تەواوبوو":"پڕکرایەوە";
-    t.onclick=async()=>{t.disabled=true;try{await api("/api/items/"+i.id,{method:"PATCH",body:{done:!i.done}});await load(true)}catch(err){toast(err.message);t.disabled=false}};
+    t.onclick=async()=>{t.disabled=true;const {error}=await sb.from("items").update({done:!i.done}).eq("id",i.id);if(error){toast(errText(error));t.disabled=false}else load()};
     a.append(t);
-    if(i.by===me.id||me.role==="admin"){const del=document.createElement("button");del.className="mini danger";del.textContent="سڕینەوە";
+    if(i.created_by===profile.id||profile.role==="admin"){const del=document.createElement("button");del.className="mini danger";del.textContent="سڕینەوە";
       del.onclick=async()=>{if(!del.dataset.sure){del.dataset.sure=1;del.textContent="دڵنیایت؟ دووبارە دابگرە";return}
-        try{await api("/api/items/"+i.id,{method:"DELETE"});toast("سڕایەوە");await load(true)}catch(err){toast(err.message)}};
+        const {error}=await sb.from("items").delete().eq("id",i.id);if(error)toast(errText(error));else{toast("سڕایەوە");load()}};
       a.append(del)}
     c.append(a);box.appendChild(c);
   });
@@ -281,42 +359,30 @@ $("copyBtn").onclick=async()=>{
   const out=items.filter(i=>!i.done);
   const txt="ماددە تەواوبووەکانی مسواک سولیماکس ("+fmtDate(Date.now())+"):\n"+(out.length?out.map((i,k)=>(k+1)+". "+i.name+(i.note?" ("+i.note+")":"")).join("\n"):"هیچ ماددەیەک تەواو نەبووە.");
   try{await navigator.clipboard.writeText(txt);toast("لیستەکە کۆپی کرا")}
-  catch(e){if(navigator.share){navigator.share({text:txt}).catch(()=>{})}else toast("کۆپی نەکرا")}
+  catch(e){if(navigator.share)navigator.share({text:txt}).catch(()=>{});else toast("کۆپی نەکرا")}
 };
 
-async function load(force){
-  if(!token)return;
-  try{const d=await api("/api/items");if(force||d.version!==lastVersion){items=d.items;lastVersion=d.version;render()}
-    $("sync").textContent="دوایین نوێکردنەوە: "+fmtTime(Date.now())+" — لیستەکە هەر ١٥ چرکە جارێک خۆی نوێ دەکاتەوە.";}
-  catch(e){$("sync").textContent="پەیوەندی بە سێرڤەرەوە نییە، دووبارە هەوڵ دەدرێتەوە…"}
-}
-
-async function startMain(){
-  try{if(!me)me=(await api("/api/me")).user}catch(e){$("loginView").hidden=false;if(token)showMsg("loginMsg","پەیوەندی بە سێرڤەرەوە نییە، دواتر هەوڵبدەرەوە.");return}
-  $("loginView").hidden=true;$("mainView").hidden=false;
-  $("hello").textContent="بەخێربێیت، "+me.name+(me.role==="admin"?" (لیژنە)":"");
-  $("btnUsers").hidden=me.role!=="admin";
-  lastVersion=-1;await load(true);setupInstall();
-}
-setInterval(()=>{if(!document.hidden)load()},15000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
-
-// ---- install to home screen ----
+// ---------- install ----------
 let deferred=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;setupInstall()});
 function setupInstall(){
   const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
   let closed=false;try{closed=localStorage.getItem("sx_install_closed")==="1"}catch(e){}
-  if(standalone||closed||!me)return;
-  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(standalone||closed||!profile)return;
   if(deferred){$("installText").textContent="ئەم بەرنامەیە دەتوانیت وەک ئەپ لەسەر شاشەی مۆبایلەکەت دابنێیت.";$("installBtn").hidden=false;$("installBox").hidden=false}
-  else if(ios){$("installText").textContent="بۆ دانانی لەسەر شاشە: لە Safari دوگمەی Share (□↑) دابگرە، پاشان «Add to Home Screen».";$("installBox").hidden=false}
+  else if(/iphone|ipad|ipod/i.test(navigator.userAgent)){$("installText").textContent="بۆ دانانی لەسەر شاشە: لە Safari دوگمەی Share (□↑) دابگرە، پاشان «Add to Home Screen».";$("installBox").hidden=false}
 }
 $("installBtn").onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;$("installBox").hidden=true};
 $("installClose").onclick=()=>{$("installBox").hidden=true;try{localStorage.setItem("sx_install_closed","1")}catch(e){}};
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 
-if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{})}
-if(token)startMain();else $("loginView").hidden=false;
+// ---------- start ----------
+(async()=>{
+  if(!window.supabase||/XXXXXXXX|PASTE-YOUR/.test(SUPABASE_URL+SUPABASE_KEY)){show("cfgView");return}
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data}=await sb.auth.getSession();session=data.session;await route();
+  sb.auth.onAuthStateChange((ev,s)=>{const changed=(!!s)!==(!!session)||(s&&session&&s.user.id!==session.user.id);session=s;if(changed)setTimeout(route,0)});
+})();
 </script>
 </body>
 </html>
