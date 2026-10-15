@@ -140,6 +140,16 @@ button:disabled{opacity:.5}
 .center{text-align:center}
 .tagline{text-align:center;color:var(--muted);margin:-6px 0 4px;font-size:.9rem}
 
+.check{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--ink);font-weight:600;cursor:pointer;flex-basis:100%}
+.check input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.tbl table{width:100%;border-collapse:collapse;min-width:520px;font-size:.9rem}
+.tbl th,.tbl td{text-align:right;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{background:var(--surface2);color:var(--muted);font-size:.78rem;font-weight:700;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.n{color:var(--muted);font-family:var(--latin);width:1%}
+.tbl td b{font-weight:800}
+.cat{display:inline-block;padding:1px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);font-weight:700;font-size:.78rem;white-space:nowrap}
 .urow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:10px}
 .urow small{color:var(--muted);direction:ltr;unicode-bidi:isolate}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--accent);color:var(--accent-ink);padding:10px 20px;border-radius:999px;font-weight:800;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
@@ -168,6 +178,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
       <div class="field" style="flex-basis:100%"><label for="an">ناو (لە لیستەکەدا بەم ناوە دەردەکەویت)</label><input id="an" maxlength="40" autocomplete="username" placeholder="ئاراس" required></div>
       <div class="field" style="flex-basis:100%" id="emailBox" hidden><label for="au">ئیمەیڵ (تەنها جاری یەکەم)</label><input id="au" type="email" autocomplete="email" autocapitalize="none" dir="ltr" placeholder="name@gmail.com"></div>
       <div class="field" style="flex-basis:100%"><label for="ap">وشەی نهێنی</label><input id="ap" type="password" autocomplete="current-password" dir="ltr" minlength="6" required></div>
+      <label class="check" for="remember"><input type="checkbox" id="remember" checked> لەبیرم مەکە</label>
       <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
     <p class="msg" id="authMsg" hidden></p>
@@ -226,17 +237,30 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
   <section class="panel">
     <h2>تۆمارکردنی ماددەی تەواوبوو</h2>
     <form class="row" id="addForm">
-      <div class="field" style="flex-basis:220px"><label for="iname">ناوی ماددە</label><input id="iname" maxlength="80" placeholder="عەکسی ئینجا / لید" required></div>
+      <div class="field" style="flex-basis:220px"><label for="iname">ناوی ماددە</label><input id="iname" maxlength="80" placeholder="عەکسی 4 ئینجا / لید" required></div>
+      <div class="field" style="flex-basis:150px"><label for="icat">صنف</label><select id="icat" required><option value="" disabled selected>صنف هەڵبژێرە</option><option>کارەبا</option><option>ئاوەڕۆ</option><option>ئاو</option><option>صحیات</option></select></div>
       <div class="field"><label for="inote">بڕی ماوە</label><input id="inote" maxlength="120" placeholder="50 دانە"></div>
       <button type="submit" id="addBtn">زیادکردن</button>
     </form>
     <p class="msg" id="addMsg" hidden></p>
   </section>
 
-  <div class="listhead"><h2>لیستی ماددەکان</h2><button class="mini" id="copyBtn">کۆپیکردنی لیست</button></div>
+  <section class="panel" id="reportPanel" hidden>
+    <h2>سەیرکردن بەپێی صنف</h2>
+    <div class="row">
+      <div class="field"><label for="rcat">صنف</label><select id="rcat"><option value="">هەموو صنفەکان</option><option>کارەبا</option><option>ئاوەڕۆ</option><option>ئاو</option><option>صحیات</option></select></div>
+      <button type="button" id="reportBtn">سەیرکردن</button>
+    </div>
+    <div id="reportOut" hidden style="display:flex;flex-direction:column;gap:10px">
+      <div class="listhead" style="margin:0"><span class="note" id="reportInfo"></span><button class="mini" type="button" id="reportCopy">کۆپیکردن</button></div>
+      <div class="tbl"><table><thead><tr><th>#</th><th>ماددە</th><th>صنف</th><th>بڕی ماوە</th><th>بەروار</th><th>نووسەر</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <div class="listhead"><h2 id="listTitle">لیستی ماددەکان</h2><button class="mini" id="copyBtn">کۆپیکردنی لیست</button></div>
   <div class="tools">
     <input id="q" type="search" placeholder="گەڕان بە ناوی ماددە…" aria-label="گەڕان">
-    <select id="who" aria-label="بەکارهێنەر"><option value="">هەموو بەکارهێنەران</option></select>
+    <select id="who" aria-label="بەکارهێنەر" hidden><option value="">هەموو بەکارهێنەران</option></select>
     <div class="seg" role="group">
       <button type="button" data-f="out" aria-pressed="true">تەواوبوو</button>
       <button type="button" data-f="ok" aria-pressed="false">پڕکراوە</button>
@@ -286,6 +310,7 @@ async function emailForName(name){
 }
 $("authForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("authMsg","");
+  try{const rem=$("remember").checked;localStorage.setItem("sx_remember",rem?"1":"0");if(rem)localStorage.setItem("sx_name",$("an").value.trim());else localStorage.removeItem("sx_name")}catch(e){}
   const name=$("an").value.trim().replace(/\s+/g," "),p=$("ap").value;
   if(name.length<2)return showMsg("authMsg","ناوەکەت بنووسە");
   $("authBtn").disabled=true;
@@ -319,6 +344,8 @@ async function route(){
   if(!profile||!profile.approved){$("pendName").textContent="سڵاو "+(profile?profile.name:"");stopLive();show("pendingView");return}
   $("hello").textContent=profile.name+(profile.role==="admin"?" · لیژنە":"");
   $("btnUsers").hidden=profile.role!=="admin";
+  const isAdm=profile.role==="admin";$("reportPanel").hidden=!isAdm;$("who").hidden=!isAdm;
+  $("listTitle").textContent=isAdm?"هەموو ماددەکان":"ماددەکانی من";
   show("mainView");await load();startLive();setupInstall();
   if(profile.role==="admin")countPending();
 }
@@ -369,8 +396,8 @@ async function loadUsers(){
 // ---------- items ----------
 $("addForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("addMsg","");$("addBtn").disabled=true;
-  const {error}=await sb.from("items").insert({name:$("iname").value.trim(),note:$("inote").value.trim()});
-  if(error)showMsg("addMsg",errText(error));else{$("iname").value=$("inote").value="";toast("زیادکرا");await load()}
+  const {error}=await sb.from("items").insert({name:$("iname").value.trim(),category:$("icat").value,note:$("inote").value.trim()});
+  if(error)showMsg("addMsg",errText(error));else{$("iname").value=$("inote").value="";$("icat").selectedIndex=0;toast("زیادکرا");await load()}
   $("addBtn").disabled=false;
 });
 
@@ -379,7 +406,7 @@ async function load(){
     .select("*, author:profiles!items_created_by_fkey(name), doner:profiles!items_done_by_fkey(name)")
     .order("created_at",{ascending:false}).limit(1000);
   if(error){$("sync").textContent="پەیوەندی نییە: "+errText(error);return}
-  items=data;render();
+  items=data;render();if(!$("reportOut").hidden)showReport();
   $("sync").textContent="دوایین نوێکردنەوە: "+fmtTime(Date.now())+" — لیستەکە خۆی ڕاستەوخۆ نوێ دەکاتەوە.";
 }
 let reloadT=null;
@@ -391,18 +418,20 @@ function stopLive(){if(channel){sb.removeChannel(channel);channel=null}}
 setInterval(()=>{if(!document.hidden&&profile&&profile.approved)load()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&profile&&profile.approved)load()});
 
+function visibleItems(){return profile&&profile.role==="admin"?items:items.filter(i=>profile&&i.created_by===profile.id)}
 function render(){
+  const all=items;const items_=visibleItems();
   const sel=$("who"),cur=sel.value;
   const people=[...new Map(items.map(i=>[i.created_by,(i.author&&i.author.name)||"بەکارهێنەر"])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
   sel.innerHTML='<option value="">هەموو بەکارهێنەران</option>';
   people.forEach(([id,n])=>{const o=document.createElement("option");o.value=id;o.textContent=n;sel.appendChild(o)});
   sel.value=people.some(p=>p[0]===cur)?cur:"";
-  const outN=items.filter(i=>!i.done).length;
-  $("cOut").textContent=outN;$("cOk").textContent=items.length-outN;
+  const outN=items_.filter(i=>!i.done).length;
+  $("cOut").textContent=outN;$("cOk").textContent=items_.length-outN;
   const q=$("q").value.trim().toLowerCase(),w=sel.value;
-  const list=items.filter(i=>(filter==="all"||(filter==="out"?!i.done:i.done))&&(!w||i.created_by===w)&&(!q||(i.name+" "+(i.note||"")).toLowerCase().includes(q)));
+  const list=items_.filter(i=>(filter==="all"||(filter==="out"?!i.done:i.done))&&(!w||i.created_by===w)&&(!q||(i.name+" "+(i.note||"")+" "+(i.category||"")).toLowerCase().includes(q)));
   const box=$("list");box.textContent="";
-  if(!list.length){box.innerHTML=items.length?'<div class="empty"><b>هیچ ئەنجامێک نییە</b>گەڕان یان فلتەرەکان بگۆڕە.</div>':'<div class="empty"><b>هێشتا هیچ ماددەیەک تۆمار نەکراوە</b>یەکەم ماددەی تەواوبوو لە فۆڕمی سەرەوە بنووسە.</div>';return}
+  if(!list.length){box.innerHTML=items_.length?'<div class="empty"><b>هیچ ئەنجامێک نییە</b>گەڕان یان فلتەرەکان بگۆڕە.</div>':'<div class="empty"><b>هێشتا هیچ ماددەیەک تۆمار نەکراوە</b>یەکەم ماددەی تەواوبوو لە فۆڕمی سەرەوە بنووسە.</div>';return}
   list.forEach(i=>{
     const c=document.createElement("div");c.className="card"+(i.done?" done":"");
     const n=document.createElement("div");n.className="name";n.textContent=i.name;
@@ -413,6 +442,7 @@ function render(){
     const d=document.createElement("span");d.className="pill";d.append("بەروار ");const db=document.createElement("b");db.className="date";db.textContent=fmtDate(i.created_at)+"  "+fmtTime(i.created_at);d.append(db);
     const by=document.createElement("span");by.className="pill";by.append("نووسەر ");const bb=document.createElement("b");bb.textContent=(i.author&&i.author.name)||"بەکارهێنەر";by.append(bb);
     m.append(d,by);
+    if(i.category){const k=document.createElement("span");k.className="cat";k.textContent=i.category;m.prepend(k)}
     if(i.note){const r=document.createElement("span");r.className="pill";r.append("بڕی ماوە ");const rb=document.createElement("b");rb.textContent=i.note;r.append(rb);m.prepend(r)}
     if(i.done&&i.done_at){const x=document.createElement("span");x.className="pill";x.append("پڕکرایەوە ");const xb=document.createElement("b");xb.className="date";xb.textContent=fmtDate(i.done_at);x.append(xb);
       if(i.doner&&i.doner.name){x.append(" – ");const y=document.createElement("b");y.textContent=i.doner.name;x.append(y)}m.append(x)}
@@ -432,8 +462,8 @@ $("q").addEventListener("input",render);$("who").addEventListener("change",rende
 document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render()});
 
 $("copyBtn").onclick=async()=>{
-  const out=items.filter(i=>!i.done);
-  const txt="ماددە تەواوبووەکانی Sulimax Mswak ("+fmtDate(Date.now())+"):\n"+(out.length?out.map((i,k)=>(k+1)+". "+i.name+(i.note?" — بڕی ماوە: "+i.note:"")).join("\n"):"هیچ ماددەیەک تەواو نەبووە.");
+  const out=visibleItems().filter(i=>!i.done);
+  const txt=listText(out,"");
   try{await navigator.clipboard.writeText(txt);toast("لیستەکە کۆپی کرا")}
   catch(e){if(navigator.share)navigator.share({text:txt}).catch(()=>{});else toast("کۆپی نەکرا")}
 };
@@ -452,6 +482,35 @@ $("installBtn").onclick=async()=>{if(!deferred)return;deferred.prompt();await de
 $("installClose").onclick=()=>{$("installBox").hidden=true;try{localStorage.setItem("sx_install_closed","1")}catch(e){}};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 
+// ---------- committee report ----------
+function listText(out,cat){
+  return "ماددە تەواوبووەکانی Sulimax Mswak"+(cat?" — صنفی "+cat:"")+" ("+fmtDate(Date.now())+"):\n"+
+    (out.length?out.map((i,k)=>(k+1)+". "+i.name+(i.category&&!cat?" ["+i.category+"]":"")+(i.note?" — بڕی ماوە: "+i.note:"")).join("\n"):"هیچ ماددەیەک تەواو نەبووە.");
+}
+let reportRows=[],reportCat="";
+function showReport(){
+  reportCat=$("rcat").value;
+  reportRows=items.filter(i=>!i.done&&(!reportCat||i.category===reportCat));
+  const body=$("reportBody");body.textContent="";
+  reportRows.forEach((i,k)=>{
+    const tr=document.createElement("tr");
+    const cells=[String(k+1),i.name,i.category||"—",i.note||"—",fmtDate(i.created_at),(i.author&&i.author.name)||"بەکارهێنەر"];
+    cells.forEach((v,ci)=>{const td=document.createElement("td");
+      if(ci===0)td.className="n";
+      if(ci===1){const b=document.createElement("b");b.textContent=v;td.append(b)}
+      else if(ci===2&&i.category){const s=document.createElement("span");s.className="cat";s.textContent=v;td.append(s)}
+      else if(ci===4){td.className="date";td.textContent=v}
+      else td.textContent=v;
+      tr.append(td)});
+    body.append(tr);
+  });
+  if(!reportRows.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=6;td.style.textAlign="center";td.style.color="var(--muted)";td.textContent="هیچ ماددەیەکی تەواوبوو لەم صنفەدا نییە.";tr.append(td);body.append(tr)}
+  $("reportInfo").textContent=(reportCat?"صنفی "+reportCat:"هەموو صنفەکان")+" · "+reportRows.length+" ماددەی تەواوبوو";
+  $("reportOut").hidden=false;
+}
+$("reportBtn").onclick=showReport;
+$("reportCopy").onclick=async()=>{const t=listText(reportRows,reportCat);try{await navigator.clipboard.writeText(t);toast("کۆپی کرا")}catch(e){if(navigator.share)navigator.share({text:t}).catch(()=>{});else toast("کۆپی نەکرا")}};
+
 // ---------- theme ----------
 function curTheme(){const t=document.documentElement.getAttribute("data-theme");if(t)return t;return matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}
 function paintThemeBtn(){const t=curTheme();$("themeBtn").textContent=t==="dark"?"☀":"☾";$("themeBtn").title=t==="dark"?"ڕووناک":"تاریک";
@@ -462,7 +521,12 @@ paintThemeBtn();
 // ---------- start ----------
 (async()=>{
   if(!window.supabase||/XXXXXXXX|PASTE-YOUR/.test(SUPABASE_URL+SUPABASE_KEY)){show("cfgView");return}
-  sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  const store={
+    getItem:k=>{try{return localStorage.getItem(k)??sessionStorage.getItem(k)}catch(e){return null}},
+    setItem:(k,v)=>{try{if(localStorage.getItem("sx_remember")==="0"){sessionStorage.setItem(k,v);localStorage.removeItem(k)}else{localStorage.setItem(k,v);sessionStorage.removeItem(k)}}catch(e){}},
+    removeItem:k=>{try{localStorage.removeItem(k);sessionStorage.removeItem(k)}catch(e){}}};
+  try{const r=localStorage.getItem("sx_remember");$("remember").checked=r!=="0";const nm=localStorage.getItem("sx_name");if(nm&&r!=="0")$("an").value=nm}catch(e){}
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storage:store}});
   const {data}=await sb.auth.getSession();session=data.session;await route();
   sb.auth.onAuthStateChange((ev,s)=>{const changed=(!!s)!==(!!session)||(s&&session&&s.user.id!==session.user.id);session=s;if(changed)setTimeout(route,0)});
 })();
