@@ -210,7 +210,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
       <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
     <p class="msg" id="authMsg" hidden></p>
-    <p class="note"><span id="switchText">ئەکاونتت نییە؟</span> <button class="link" id="switchBtn" type="button">دروستکردنی ئەکاونت</button></p>
+    <p class="note center">ئەکاونت تەنها لەلایەن ئەدمینەوە دروست دەکرێت.</p>
   </div>
 </div>
 
@@ -292,7 +292,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
     </div>
   </section>
 
-  <div class="listhead"><h2 id="listTitle">لیستی ماددەکان</h2><button class="mini" id="copyBtn">کۆپیکردنی لیست</button></div>
+  <div class="listhead"><h2 id="listTitle">لیستی ماددەکان</h2><button class="mini" id="copyBtn" hidden>کۆپیکردنی لیست</button></div>
   <div class="tools">
     <input id="q" type="search" placeholder="گەڕان بە ناوی ماددە…" aria-label="گەڕان">
     <select id="who" aria-label="بەکارهێنەر" hidden><option value="">هەموو بەکارهێنەران</option></select>
@@ -339,7 +339,7 @@ function errText(e){
   if(/Invalid login/i.test(m))return "وشەی نهێنی هەڵەیە";
   if(/already registered|already exists/i.test(m))return "ئەم ئیمەیڵە پێشتر ئەکاونتی پێ دروست کراوە";
   if(/invalid/i.test(m)&&/email/i.test(m))return "ئەم ئیمەیڵە قبوڵ نەکرا، ئیمەیڵێکی ڕاستەقینە بنووسە";
-  if(/Database error saving new user/i.test(m))return "ئەکاونت دروست نەکرا. لەوانەیە ژمارەی ئەکاونتەکان گەیشتبێتە ٢٠.";
+  if(/Database error saving new user/i.test(m))return "ئەکاونت دروست نەکرا. یان ژمارەی ئەکاونتەکان گەیشتووەتە ٢٠، یان update4.sql لە Supabase ـدا Run نەکراوە.";
   if(/Password should be/i.test(m))return "وشەی نهێنی دەبێت لانیکەم ٦ پیت بێت";
   if(/Email not confirmed/i.test(m))return "لە Supabase پێویستە «Confirm email» بکوژێنرێتەوە (README ببینە)";
   if(/row-level security|permission/i.test(m))return "مۆڵەتت نییە بۆ ئەم کارە";
@@ -348,11 +348,7 @@ function errText(e){
 }
 
 // ---------- auth ----------
-$("switchBtn").onclick=()=>{signup=!signup;$("emailBox").hidden=!signup;$("au").required=signup;
-  $("authBtn").textContent=signup?"دروستکردنی ئەکاونت":"چوونەژوورەوە";
-  $("switchText").textContent=signup?"ئەکاونتت هەیە؟":"ئەکاونتت نییە؟";
-  $("switchBtn").textContent=signup?"چوونەژوورەوە":"دروستکردنی ئەکاونت";
-  $("ap").autocomplete=signup?"new-password":"current-password";showMsg("authMsg","")};
+
 
 async function emailForName(name){
   const {data,error}=await sb.rpc("login_email",{p_name:name});
@@ -390,16 +386,23 @@ async function loadProfile(){
   if(error)throw error;profile=data;
 }
 
+function resetUI(){
+  items=[];profile=null;
+  ["usersPanel","passPanel","refillNotice","installBox","reportPanel","copyBtn","btnUsers"].forEach(id=>{const el=$(id);if(el)el.hidden=true});
+  closeReport();$("list").textContent="";$("userList").textContent="";$("cOut").textContent="0";$("cOk").textContent="0";$("hello").textContent="";
+  $("q").value="";$("who").value="";
+}
 async function route(){
-  if(!session){profile=null;stopLive();show("loginView");return}
+  resetUI();
+  if(!session){stopLive();show("loginView");return}
   try{await loadProfile()}catch(e){toast(errText(e));show("loginView");return}
   if(!profile||!profile.approved){$("pendName").textContent="سڵاو "+(profile?profile.name:"");stopLive();show("pendingView");return}
   $("hello").textContent=profile.name+(profile.role==="admin"?" · ئەدمین":"");
-  $("btnUsers").hidden=profile.role!=="admin";
-  const isAdm=profile.role==="admin";$("reportPanel").hidden=!isAdm;$("who").hidden=!isAdm;
+  const isAdm=profile.role==="admin";
+  $("btnUsers").hidden=!isAdm;$("reportPanel").hidden=!isAdm;$("who").hidden=!isAdm;$("copyBtn").hidden=!isAdm;
   $("listTitle").textContent=isAdm?"هەموو ماددەکان":"ماددەکانی من";
   filter=isAdm?"out":"all";document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.f===filter)));
-  show("mainView");await load();startLive();setupInstall();
+  render();show("mainView");await load();startLive();setupInstall();
   if(profile.role==="admin")countPending();
 }
 $("pendRetry").onclick=route;
@@ -457,7 +460,7 @@ $("newUserForm").addEventListener("submit",async e=>{
     if(await emailForName(name))throw new Error("ئەم ناوە پێشتر بەکارهاتووە.");
     // separate client so the admin stays signed in
     const mem={};const tmp=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"sx_tmp",storage:{getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=v},removeItem:k=>{delete mem[k]}}}});
-    const {data,error}=await tmp.auth.signUp({email,password:pass,options:{data:{username:name.toLowerCase(),name}}});
+    const {data,error}=await tmp.auth.signUp({email,password:pass,options:{data:{username:name.toLowerCase(),name,role,created_by:profile.id}}});
     if(error)throw error;
     const uid=data.user&&data.user.id;if(!uid)throw new Error("ئەکاونت دروست نەکرا");
     try{await tmp.auth.signOut()}catch(x){}
@@ -629,7 +632,9 @@ paintThemeBtn();
   try{const r=localStorage.getItem("sx_remember");$("remember").checked=r!=="0";const nm=localStorage.getItem("sx_name");if(nm&&r!=="0")$("an").value=nm}catch(e){}
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storage:store}});
   const {data}=await sb.auth.getSession();session=data.session;await route();
-  sb.auth.onAuthStateChange((ev,s)=>{const changed=(!!s)!==(!!session)||(s&&session&&s.user.id!==session.user.id);session=s;if(changed)setTimeout(route,0)});
+  sb.auth.onAuthStateChange((ev,s)=>{const wasIn=!!session;const changed=(!!s)!==wasIn||(s&&session&&s.user.id!==session.user.id);session=s;
+    if(ev==="SIGNED_OUT"&&wasIn){location.reload();return}
+    if(changed)setTimeout(route,0)});
 })();
 </script>
 </body>
