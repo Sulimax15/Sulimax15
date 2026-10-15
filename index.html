@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>مسواک سولیماکس</title>
+<title>Sulimax Miswak</title>
 <meta name="theme-color" content="#111111">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="سولیماکس">
+<meta name="apple-mobile-web-app-title" content="Sulimax">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -78,8 +78,10 @@ button:disabled{opacity:.5}
 .empty b{display:block;color:var(--ink)}
 .menu{display:flex;gap:6px;flex-wrap:wrap}
 .login{max-width:400px;margin:6vh auto 0;width:100%}
-.logo{display:block;width:100%;max-width:260px;height:auto;border-radius:12px}
-.hlogo{display:block;height:44px;width:auto;border-radius:8px}
+.logo{display:block;width:100%;max-width:260px;height:auto;border-radius:12px;margin-inline:auto}
+.center{text-align:center}
+.brand{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.hlogo{display:block;width:100%;max-width:220px;height:auto;border-radius:10px}
 .urow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:8px}
 .urow small{color:var(--muted);direction:ltr;unicode-bidi:isolate}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 18px;border-radius:10px;font-weight:600;z-index:9}
@@ -101,10 +103,10 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:1px 6px;bor
 <div class="wrap" id="loginView" hidden>
   <div class="panel login">
     <img class="logo" src="logo.png" alt="SMAX">
-    <h1>مسواک سولیماکس<small>لیستی ماددە تەواوبووەکان</small></h1>
+    <h1 class="center"><span dir="ltr">Sulimax Miswak</span><small>لیستی ماددە تەواوبووەکان</small></h1>
     <form id="authForm" class="row">
-      <div class="field" style="flex-basis:100%" id="nameBox" hidden><label for="an">ناوی تەواو (بۆ لیستەکە)</label><input id="an" maxlength="40" placeholder="ئاراس محەمەد"></div>
-      <div class="field" style="flex-basis:100%"><label for="au">ئیمەیڵ</label><input id="au" type="email" autocomplete="email" autocapitalize="none" dir="ltr" placeholder="name@gmail.com" required></div>
+      <div class="field" style="flex-basis:100%"><label for="an">ناو (لە لیستەکەدا بەم ناوە دەردەکەویت)</label><input id="an" maxlength="40" autocomplete="username" placeholder="ئاراس" required></div>
+      <div class="field" style="flex-basis:100%" id="emailBox" hidden><label for="au">ئیمەیڵ (تەنها جاری یەکەم)</label><input id="au" type="email" autocomplete="email" autocapitalize="none" dir="ltr" placeholder="name@gmail.com"></div>
       <div class="field" style="flex-basis:100%"><label for="ap">وشەی نهێنی</label><input id="ap" type="password" autocomplete="current-password" dir="ltr" minlength="6" required></div>
       <button type="submit" id="authBtn" style="flex:1">چوونەژوورەوە</button>
     </form>
@@ -125,9 +127,10 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg);padding:1px 6px;bor
 
 <!-- MAIN -->
 <div class="wrap" id="mainView" hidden>
-  <div class="top">
-    <div style="display:flex;align-items:center;gap:12px;min-width:0"><img class="hlogo" src="logo.png" alt="SMAX"><h1>مسواک سولیماکس<small id="hello"></small></h1></div>
-    <div class="menu">
+  <div class="brand">
+    <img class="hlogo" src="logo.png" alt="SMAX">
+    <h1><span dir="ltr">Sulimax Miswak</span><small id="hello"></small></h1>
+    <div class="menu" style="justify-content:center">
       <button class="mini" id="btnUsers" hidden>بەکارهێنەران <span id="pendCount"></span></button>
       <button class="mini" id="btnPass">وشەی نهێنی</button>
       <button class="mini danger" id="btnOut">چوونەدەرەوە</button>
@@ -195,7 +198,7 @@ const fmtTime=v=>{const d=new Date(v);return pad(d.getHours())+":"+pad(d.getMinu
 
 function errText(e){
   const m=(e&&e.message)||"";
-  if(/Invalid login/i.test(m))return "ئیمەیڵ یان وشەی نهێنی هەڵەیە";
+  if(/Invalid login/i.test(m))return "وشەی نهێنی هەڵەیە";
   if(/already registered|already exists/i.test(m))return "ئەم ئیمەیڵە پێشتر ئەکاونتی پێ دروست کراوە";
   if(/invalid/i.test(m)&&/email/i.test(m))return "ئەم ئیمەیڵە قبوڵ نەکرا، ئیمەیڵێکی ڕاستەقینە بنووسە";
   if(/Password should be/i.test(m))return "وشەی نهێنی دەبێت لانیکەم ٦ پیت بێت";
@@ -206,25 +209,34 @@ function errText(e){
 }
 
 // ---------- auth ----------
-$("switchBtn").onclick=()=>{signup=!signup;$("nameBox").hidden=!signup;$("an").required=signup;
+$("switchBtn").onclick=()=>{signup=!signup;$("emailBox").hidden=!signup;$("au").required=signup;
   $("authBtn").textContent=signup?"دروستکردنی ئەکاونت":"چوونەژوورەوە";
   $("switchText").textContent=signup?"ئەکاونتت هەیە؟":"ئەکاونتت نییە؟";
   $("switchBtn").textContent=signup?"چوونەژوورەوە":"دروستکردنی ئەکاونت";
   $("ap").autocomplete=signup?"new-password":"current-password";showMsg("authMsg","")};
 
+async function emailForName(name){
+  const {data,error}=await sb.rpc("login_email",{p_name:name});
+  if(error){if(/login_email|function/i.test(error.message))throw new Error("پێویستە فایلی update.sql لە Supabase ← SQL Editor ـدا Run بکرێت.");throw error}
+  return data;
+}
 $("authForm").addEventListener("submit",async e=>{
   e.preventDefault();showMsg("authMsg","");
-  const u=$("au").value.trim().toLowerCase(),p=$("ap").value;
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u))return showMsg("authMsg","ئیمەیڵەکە بە دروستی بنووسە، بۆ نموونە name@gmail.com");
+  const name=$("an").value.trim().replace(/\s+/g," "),p=$("ap").value;
+  if(name.length<2)return showMsg("authMsg","ناوەکەت بنووسە");
   $("authBtn").disabled=true;
   try{
     if(signup){
-      const name=$("an").value.trim();if(!name)throw new Error("ناوی تەواو بنووسە");
-      const {data,error}=await sb.auth.signUp({email:u,password:p,options:{data:{username:u.split("@")[0],name}}});
+      const email=$("au").value.trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error("ئیمەیڵەکە بە دروستی بنووسە، بۆ نموونە name@gmail.com");
+      if(await emailForName(name))throw new Error("ئەم ناوە پێشتر بەکارهاتووە، ناوێکی تر هەڵبژێرە (بۆ نموونە ناوی دووەمیشی لەگەڵ بنووسە)");
+      const {data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:name.toLowerCase(),name}}});
       if(error)throw error;
       if(!data.session){showMsg("authMsg","ئەکاونت دروست کرا، بەڵام «Confirm email» لە Supabase کوژاوە نییە. README ببینە.");}
     }else{
-      const {error}=await sb.auth.signInWithPassword({email:u,password:p});
+      const email=await emailForName(name);
+      if(!email)throw new Error("ئەم ناوە نەدۆزرایەوە. ئەگەر ئەکاونتت نییە، «دروستکردنی ئەکاونت» دابگرە.");
+      const {error}=await sb.auth.signInWithPassword({email,password:p});
       if(error)throw error;
     }
     $("ap").value="";
@@ -356,7 +368,7 @@ document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{filter=b.data
 
 $("copyBtn").onclick=async()=>{
   const out=items.filter(i=>!i.done);
-  const txt="ماددە تەواوبووەکانی مسواک سولیماکس ("+fmtDate(Date.now())+"):\n"+(out.length?out.map((i,k)=>(k+1)+". "+i.name+(i.note?" ("+i.note+")":"")).join("\n"):"هیچ ماددەیەک تەواو نەبووە.");
+  const txt="ماددە تەواوبووەکانی Sulimax Miswak ("+fmtDate(Date.now())+"):\n"+(out.length?out.map((i,k)=>(k+1)+". "+i.name+(i.note?" ("+i.note+")":"")).join("\n"):"هیچ ماددەیەک تەواو نەبووە.");
   try{await navigator.clipboard.writeText(txt);toast("لیستەکە کۆپی کرا")}
   catch(e){if(navigator.share)navigator.share({text:txt}).catch(()=>{});else toast("کۆپی نەکرا")}
 };
