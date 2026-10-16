@@ -172,6 +172,14 @@ table.rt{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0
 .rt tr.filled td{color:var(--muted)}
 .rt tr.filled td b{text-decoration:line-through;text-decoration-color:var(--ok)}
 @media (max-width:360px){.rt .dt{width:70px}.rt th,.rt td{padding:8px 6px}}
+#reportPanel{background:linear-gradient(135deg,var(--accent-soft),transparent 70%),var(--surface);border:2px solid var(--accent);position:relative;overflow:hidden}
+#reportPanel h2::before{display:none}
+#reportPanel .rp-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#reportPanel .rp-icon{width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+#reportPanel .rp-title{display:flex;align-items:center;gap:10px}
+#reportPanel .rp-badge{font-size:.72rem;font-weight:800;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+#reportPanel select{border-color:rgba(243,167,34,.45)}
+#reportPanel #reportBtn{min-width:120px}
 .notice{background:var(--ok-soft);border:1px solid var(--ok);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .notice b{color:var(--ok)}
 .notice ul{margin:0;padding-inline-start:18px;font-size:.9rem}
@@ -284,7 +292,13 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
   </section>
 
   <section class="panel" id="reportPanel" hidden>
-    <h2>سەیرکردن بەپێی صنف</h2>
+    <div class="rp-head">
+      <div class="rp-title">
+        <span class="rp-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg></span>
+        <h2>سەیرکردن بەپێی صنف</h2>
+      </div>
+      <span class="rp-badge">ئەدمین</span>
+    </div>
     <div class="row">
       <div class="field"><label for="rcat">صنف</label><select id="rcat"><option value="">هەموو صنفەکان</option><option>کارەبا</option><option>ئاوەڕۆ</option><option>ئاو</option><option>صحیات</option></select></div>
       <button type="button" id="reportBtn">سەیرکردن</button>
