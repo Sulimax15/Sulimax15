@@ -186,6 +186,9 @@ table.rt{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0
 .tbl td.n{color:var(--muted);font-family:var(--latin);width:1%}
 .tbl td b{font-weight:800}
 .cat{display:inline-block;padding:1px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);font-weight:700;font-size:.78rem;white-space:nowrap}
+.pwrow{flex-basis:100%;display:flex;gap:8px;margin-top:4px}
+.pwrow input{flex:1;min-width:0;padding:8px 11px}
+.pwrow button{padding:8px 14px}
 .urow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:10px}
 .urow small{color:var(--muted);direction:ltr;unicode-bidi:isolate}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--accent);color:var(--accent-ink);padding:10px 20px;border-radius:999px;font-weight:800;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
@@ -224,9 +227,9 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
 <!-- PENDING -->
 <div class="wrap" id="pendingView" hidden>
   <div class="panel login">
-    <span class="chip warn" style="align-self:flex-start">چاوەڕوانی پەسەندکردن</span>
+    <span class="chip warn" style="align-self:flex-start">ناچالاک</span>
     <h1 id="pendName"></h1>
-    <p>ئەکاونتەکەت دروست کرا. ئەدمین دەبێت پەسەندی بکات پێش ئەوەی بتوانیت لیستەکە ببینیت و ماددە بنووسیت.</p>
+    <p>ئەکاونتەکەت ئێستا چالاک نییە. پەیوەندی بە ئەدمینەوە بکە.</p>
     <div class="row"><button id="pendRetry">دووبارە پشکنین</button><button class="ghost" id="pendOut">چوونەدەرەوە</button></div>
   </div>
 </div>
@@ -338,7 +341,7 @@ code{direction:ltr;unicode-bidi:isolate;background:var(--bg2);padding:1px 6px;bo
 
 <script>
 const $=id=>document.getElementById(id);
-let sb=null,session=null,profile=null,items=[],filter="out",signup=false,channel=null;
+let sb=null,session=null,profile=null,items=[],filter="out",channel=null;
 
 function show(view){["cfgView","loginView","pendingView","mainView"].forEach(v=>$(v).hidden=v!==view)}
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
@@ -375,17 +378,9 @@ $("authForm").addEventListener("submit",async e=>{
   if(name.length<2)return showMsg("authMsg","ناوەکەت بنووسە");
   $("authBtn").disabled=true;
   try{
-    if(signup){
-      const email=$("au").value.trim().toLowerCase();
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error("ئیمەیڵەکە بە دروستی بنووسە، بۆ نموونە name@gmail.com");
-      try{const {data:left}=await sb.rpc("accounts_left");if(left===0)throw new Error("LIMIT")}catch(x){if(x.message==="LIMIT")throw new Error("ژمارەی ئەکاونتەکان گەیشتووەتە ٢٠. پەیوەندی بە ئەدمینوە بکە.")}
-      if(await emailForName(name))throw new Error("ئەم ناوە پێشتر بەکارهاتووە، ناوێکی تر هەڵبژێرە (بۆ نموونە ناوی دووەمیشی لەگەڵ بنووسە)");
-      const {data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:name.toLowerCase(),name}}});
-      if(error)throw error;
-      if(!data.session){showMsg("authMsg","ئەکاونت دروست کرا، بەڵام «Confirm email» لە Supabase کوژاوە نییە. README ببینە.");}
-    }else{
+    {
       const email=await emailForName(name);
-      if(!email)throw new Error("ئەم ناوە نەدۆزرایەوە. ئەگەر ئەکاونتت نییە، «دروستکردنی ئەکاونت» دابگرە.");
+      if(!email)throw new Error("ئەم ناوە نەدۆزرایەوە. ناوەکەت ڕێک وەک ئەوە بنووسە کە ئەدمین بۆی دروست کردوویت.");
       const {error}=await sb.auth.signInWithPassword({email,password:p});
       if(error)throw error;
     }
@@ -459,6 +454,25 @@ async function loadUsers(){
         ro.textContent=u.role==="admin"?"لابردن لە ئەدمین":"کردن بە ئەدمین";
         ro.onclick=()=>setUser(u.id,{role:u.role==="admin"?"user":"admin"});a.append(ro)}
     }
+    if(u.id!==profile.id){
+      const pw=document.createElement("button");pw.className="mini";pw.type="button";pw.textContent="گۆڕینی وشەی نهێنی";
+      pw.onclick=()=>{
+        if(r.querySelector(".pwrow")){r.querySelector(".pwrow").remove();return}
+        const row=document.createElement("div");row.className="pwrow";
+        const inp=document.createElement("input");inp.type="text";inp.dir="ltr";inp.autocomplete="new-password";inp.placeholder="وشەی نهێنیی نوێ (لانیکەم ٦)";inp.id="pw_"+u.id;
+        const save=document.createElement("button");save.type="button";save.textContent="پاشەکەوت";
+        save.onclick=async()=>{
+          if(inp.value.length<6){toast("وشەی نهێنی دەبێت لانیکەم ٦ پیت بێت");return}
+          save.disabled=true;
+          const {error}=await sb.rpc("admin_set_password",{p_user:u.id,p_password:inp.value});
+          save.disabled=false;
+          if(error){toast(/admin_set_password|function/i.test(error.message)?"پێویستە update5.sql لە Supabase ـدا Run بکرێت":errText(error));return}
+          toast("وشەی نهێنیی "+u.name+" گۆڕدرا");row.remove();
+        };
+        row.append(inp,save);r.append(row);inp.focus();
+      };
+      a.append(pw);
+    }
     r.append(s,a);box.appendChild(r);
   });
 }
@@ -476,7 +490,6 @@ $("newUserForm").addEventListener("submit",async e=>{
     const {data,error}=await tmp.auth.signUp({email,password:pass,options:{data:{username:name.toLowerCase(),name,role,created_by:profile.id}}});
     if(error)throw error;
     const uid=data.user&&data.user.id;if(!uid)throw new Error("ئەکاونت دروست نەکرا");
-    try{await tmp.auth.signOut()}catch(x){}
     const {error:e2}=await sb.from("profiles").update({approved:true,role}).eq("id",uid);
     if(e2)throw e2;
     $("nu_name").value=$("nu_email").value=$("nu_pass").value="";$("nu_role").value="user";
